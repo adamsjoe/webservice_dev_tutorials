@@ -15,9 +15,13 @@ connection.once('open', () => {
 
 const MoviesModel = require('./models/moviesModel')
 
-app.get('/movie/:title', (req, res) => {
-    // const movie = movies.find(singleMovie => singleMovie.title == req.params.title )    
-    res.json(movie)
+app.get('/movie/:title', async (req, res) => {
+    try {
+        const movie = await MoviesModel.findOne({title: req.params.title})
+        res.json(movie)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }    
 })
 
 app.get('/movies/dir/:name', (req, res) => {
@@ -26,7 +30,6 @@ app.get('/movies/dir/:name', (req, res) => {
 })
 
 app.get('/movies/', async (req, res) => {
-    // console.log('req >', req, '<')
     try {
         const movies = await MoviesModel.find()
         res.json(movies)
