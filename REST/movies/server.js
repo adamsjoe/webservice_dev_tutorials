@@ -51,10 +51,14 @@ app.get('/movies/', async (req, res) => {
     }
 })
 
-app.post('/movie/', (req, res) => {
-    // console.log('Recieved POST Request')
-    // movies.push(req.body)
-    // res.json('movie added')
+app.post('/movie/', async (req, res) => {
+    try {
+        const movie = new MoviesModel({...req.body})
+        const insertedMovie = await movie.save()
+        res.status(201).json(insertedMovie)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }
 })
 
 app.listen(port, () => {
