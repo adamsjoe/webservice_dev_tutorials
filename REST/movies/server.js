@@ -24,9 +24,13 @@ app.get('/movie/:title', async (req, res) => {
     }    
 })
 
-app.get('/movies/dir/:name', (req, res) => {
-    // const dirMovies = movies.filter(dirMovie => dirMovie.dir == req.params.name )
-    res.json(dirMovies)
+app.get('/movies/dir/:name', async (req, res) => {
+    try {
+        const directors = await MoviesModel.find({name: req.params.name})
+        res.json(directors)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }   
 })
 
 app.get('/movies/', async (req, res) => {
