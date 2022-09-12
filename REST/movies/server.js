@@ -26,8 +26,17 @@ app.get('/movie/:title', async (req, res) => {
 
 app.get('/movies/dir/:name', async (req, res) => {
     try {
-        const directors = await MoviesModel.find({name: req.params.name})
+        const directors = await MoviesModel.find({dir: req.params.name})
         res.json(directors)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }   
+})
+
+app.get('/movies/platform/:name', async (req, res) => {
+    try {
+        const platform = await MoviesModel.find({platform: req.params.name})
+        res.json(platform)
     } catch (err) {
         res.status(500).json({message: err.message})
     }   
@@ -45,7 +54,7 @@ app.get('/movies/', async (req, res) => {
 app.post('/movie/', (req, res) => {
     // console.log('Recieved POST Request')
     // movies.push(req.body)
-    res.json('movie added')
+    // res.json('movie added')
 })
 
 app.listen(port, () => {
