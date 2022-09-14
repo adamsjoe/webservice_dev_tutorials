@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const nodefetch = (...args) => import('node-fetch').then(({default:fetch}) => fetch(...args))
 const app = express()
 const port = 3000
 
@@ -18,7 +19,14 @@ const MoviesModel = require('./models/moviesModel')
 app.get('/movie/:title', async (req, res) => {
     try {
         const movie = await MoviesModel.findOne({title: req.params.title})
-        res.json(movie)
+        const movieURL = `https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${req.params.title}`
+
+        const tbdbMeta = await nodefetch(movieURL)
+        const tmdbData = await tbdbMeta.json()
+
+        const returnMovie = {...movie._doc, "synopsis": tmdbData.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${tmdbData.results[0].poster_path}`}
+        // res.json(movie)
+        res.json(returnMovie)
     } catch (err) {
         res.status(500).json({message: err.message})
     }    
