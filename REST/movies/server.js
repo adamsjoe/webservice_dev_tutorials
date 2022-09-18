@@ -52,8 +52,14 @@ app.get('/movies/platform/:name', async (req, res) => {
 
 app.get('/movies/', async (req, res) => {
     try {
-        const movies = await MoviesModel.find()
-        res.json(movies)
+        const moviesData = await MoviesModel.find()
+        let movies = moviesData.map(async movie => {
+            const getMovieData = await nodefetch(`https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${movie.title}`)
+            let movieInfo = await getMovieData.json()
+            return {...movie._doc, "synopsis": movieInfo.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${movieInfo.results[0].poster_path}`}
+        })
+        let allMovies = await Promise.all(movies)
+        res.json(allMovies)
     } catch (err) {
         res.status(500).json({message: err.message})
     }
