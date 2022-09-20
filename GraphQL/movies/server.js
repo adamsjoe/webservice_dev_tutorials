@@ -31,7 +31,9 @@ const AllMoviesQuery = new GraphQLObjectType({
             args: {
                 directorName: { type: GraphQLString }
             },   
-            resolve: (parent, args) => dbModal.find()            
+            resolve: async (parent, args) => {
+                return args.directorName ?  await dbModal.find({ dir: args.directorName}) : ( await dbModal.find() )           
+            }
         },                    
         platforms: {
             type: new GraphQLList(graphMovies.platformType),
