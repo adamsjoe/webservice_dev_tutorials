@@ -71,5 +71,5 @@ app.use('/graphql', graphqlHTTP({
 }))
 
 app.listen(port, () => {
-    console.log('Starting REST Service')
+    console.log('Starting GraphQL Interface')
 })
