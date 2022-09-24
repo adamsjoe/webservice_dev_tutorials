@@ -9,7 +9,9 @@ const MovieType = new GraphQLObjectType({
         id: { type: GraphQLNonNull(GraphQLString) },
         title: { type: GraphQLNonNull(GraphQLString) },
         dir: { type: GraphQLNonNull(GraphQLString) },
-        platform: { type: GraphQLNonNull(GraphQLString)}
+        platform: { type: GraphQLNonNull(GraphQLString)},
+        image: { type: GraphQLNonNull(GraphQLString)},
+        synopsis: { type: GraphQLNonNull(GraphQLString)}
     })
 })
 
@@ -30,3 +32,18 @@ const PlatformType = new GraphQLObjectType({
 })
 
 exports.platformType = PlatformType
+
+const SingleMovie = new GraphQLObjectType({
+    name: 'SingleMovie',
+    description: 'A single movie ',
+    fields: () => ({        
+        id: { type: GraphQLNonNull(GraphQLString) },
+        title: { type: GraphQLNonNull(GraphQLString) },
+        dir: { type: GraphQLNonNull(GraphQLString) },
+        platform: { type: GraphQLNonNull(GraphQLString)},
+        image: { type: GraphQLNonNull(GraphQLString)},
+        synopsis: { type: GraphQLNonNull(GraphQLString)}
+    })
+})
+
+exports.singleMovie = SingleMovie

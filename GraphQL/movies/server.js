@@ -2,7 +2,7 @@ const express = require('express')
 const { graphqlHTTP } = require('express-graphql')
 const { GraphQLSchema, GraphQLObjectType, GraphQLList, GraphQLString } = require('graphql')
 const mongoose = require('mongoose')
-// const nodefetch = (...args) => import('node-fetch').then(({default:fetch}) => fetch(...args))
+const nodefetch = (...args) => import('node-fetch').then(({default:fetch}) => fetch(...args))
 
 const app = express()
 const port = 5000
@@ -21,20 +21,61 @@ connection.once('open', () => {
     console.log('Mongoose connected')
 })
 
-const AllMoviesQuery = new GraphQLObjectType({
+const RootQueryType = new GraphQLObjectType({
     name: 'Query',
     description: 'Root Query',
     fields: () => ({
-        movies: {
+        movies: {            
             type: new GraphQLList(graphMovies.movieType),
             description: 'Returns all movies from the database',
             args: {
-                directorName: { type: GraphQLString }
+                directorName: { type: GraphQLString },
+                movieName: { type: GraphQLString }
             },   
-            resolve: async (parent, args) => {
-                return args.directorName ?  await dbModal.find({ dir: args.directorName}) : ( await dbModal.find() )           
+            resolve: async (parent, args) => {  
+                
+                if (args.directorName) {                    
+                
+                    return await dbModal.find({ dir: args.directorName})
+                
+                } else {                    
+                    const moviesData = await dbModal.find()
+                
+                    let movies = moviesData.map(async movie => {                        
+                        const getMovieData = await nodefetch(`https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${movie.title}`)                        
+                        let movieInfo = await getMovieData.json()
+                        return {...movie._doc, "synopsis": movieInfo.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${movieInfo.results[0].poster_path}`}
+                    })
+
+                    let allMovies = await Promise.all(movies)
+
+                    return allMovies
+                }
             }
-        },                    
+        },   
+        movie: {
+            type: new GraphQLList(graphMovies.singleMovie),
+            description: 'Returns a single movie from the database',
+            args: {
+                movieName: { type: GraphQLString }
+            },
+            resolve: async(parent, args) => {
+
+                // const movie = await dbModal.findOne({title: args.movieName})
+                const movie = await dbModal.find().distinct('title', {title: args.movieName })
+                const movieURL = `https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${args.movieName}`
+        
+                const tbdbMeta = await nodefetch(movieURL)
+                const tmdbData = await tbdbMeta.json()
+
+                const returnMovie = {...movie._doc, "synopsis": tmdbData.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${tmdbData.results[0].poster_path}`}
+
+                const here = JSON.stringify(returnMovie)
+
+                console.log(`here is ${here}`)
+                return here
+            }
+        },              
         platforms: {
             type: new GraphQLList(graphMovies.platformType),
             description: 'Returns all platforms in system',
@@ -62,7 +103,7 @@ const AllMoviesQuery = new GraphQLObjectType({
 })
 
 const schema = new GraphQLSchema({
-    query:AllMoviesQuery
+    query:RootQueryType
 })
 
 app.use('/graphql', graphqlHTTP({
