@@ -30,7 +30,6 @@ const RootQueryType = new GraphQLObjectType({
             description: 'Returns all movies from the database',
             args: {
                 directorName: { type: GraphQLString },
-                movieName: { type: GraphQLString }
             },   
             resolve: async (parent, args) => {  
                 
@@ -54,15 +53,15 @@ const RootQueryType = new GraphQLObjectType({
             }
         },   
         movie: {
-            type: new GraphQLList(graphMovies.singleMovie),
+            type: graphMovies.singleMovie,
             description: 'Returns a single movie from the database',
             args: {
                 movieName: { type: GraphQLString }
             },
             resolve: async(parent, args) => {
 
-                // const movie = await dbModal.findOne({title: args.movieName})
-                const movie = await dbModal.find().distinct('title', {title: args.movieName })
+                const movie = await dbModal.findOne({title: args.movieName})
+                // const movie = await dbModal.find().distinct('title', {title: args.movieName })
                 const movieURL = `https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${args.movieName}`
         
                 const tbdbMeta = await nodefetch(movieURL)
@@ -70,10 +69,7 @@ const RootQueryType = new GraphQLObjectType({
 
                 const returnMovie = {...movie._doc, "synopsis": tmdbData.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${tmdbData.results[0].poster_path}`}
 
-                const here = JSON.stringify(returnMovie)
-
-                console.log(`here is ${here}`)
-                return here
+                return returnMovie
             }
         },              
         platforms: {
