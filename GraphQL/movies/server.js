@@ -41,9 +41,15 @@ const RootQueryType = new GraphQLObjectType({
                     const moviesData = await dbModal.find()
                 
                     let movies = moviesData.map(async movie => {                        
+                        // get data from tmdb
                         const getMovieData = await nodefetch(`https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${movie.title}`)                        
                         let movieInfo = await getMovieData.json()
-                        return {...movie._doc, "synopsis": movieInfo.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${movieInfo.results[0].poster_path}`}
+
+                        return {
+                            ...movie._doc, 
+                            "synopsis": movieInfo.results[0].overview, 
+                            "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${movieInfo.results[0].poster_path}`
+                        }
                     })
 
                     let allMovies = await Promise.all(movies)
@@ -61,15 +67,31 @@ const RootQueryType = new GraphQLObjectType({
             resolve: async(parent, args) => {
 
                 const movie = await dbModal.findOne({title: args.movieName})
-                // const movie = await dbModal.find().distinct('title', {title: args.movieName })
+
+                // get data from tmdb
                 const movieURL = `https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${args.movieName}`
-        
+
                 const tbdbMeta = await nodefetch(movieURL)
                 const tmdbData = await tbdbMeta.json()
+                
+                // get data from imdb
+                const getImdbData = await nodefetch(`https://imdb-api.com/en/API/SearchMovie/k_a9u98xna/${movie.title}`)
+                let imdbMovieInfo = await getImdbData.json()
+                
+                const imdbMovieID = await imdbMovieInfo.results[0].id.trim()
 
-                const returnMovie = {...movie._doc, "synopsis": tmdbData.results[0].overview, "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${tmdbData.results[0].poster_path}`}
+                // get review data
+                const imdbReviews = await nodefetch(`https://imdb-api.com/en/API/Ratings/k_a9u98xna/${imdbMovieID}`)
+                let imdbReviewInfo = await imdbReviews.json()
 
-                return returnMovie
+                const returnMovie = {
+                    ...movie._doc, 
+                    "synopsis": tmdbData.results[0].overview, 
+                    "metacrtic_score": imdbReviewInfo.metacritic,
+                    "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${tmdbData.results[0].poster_path}`
+                }
+
+                return await returnMovie
             }
         },              
         platforms: {

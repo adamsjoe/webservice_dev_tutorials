@@ -42,7 +42,8 @@ const SingleMovie = new GraphQLObjectType({
         dir: { type: GraphQLNonNull(GraphQLString) },
         platform: { type: GraphQLNonNull(GraphQLString)},
         image: { type: GraphQLNonNull(GraphQLString)},
-        synopsis: { type: GraphQLNonNull(GraphQLString)}
+        synopsis: { type: GraphQLNonNull(GraphQLString)},
+        metacrtic_score: { type: GraphQLNonNull(GraphQLString)}
     })
 })
 
