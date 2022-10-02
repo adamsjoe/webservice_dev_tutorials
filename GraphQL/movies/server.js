@@ -45,10 +45,6 @@ const RootQueryType = new GraphQLObjectType({
                         const getMovieData = await nodefetch(`https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${movie.title}`)                        
                         let movieInfo = await getMovieData.json()
                         
-                        console.log('-----')
-                        console.log(`>>> for ${movie.title} \n`)
-                        console.log('>>>', movieInfo.results[0], '<<<')
-                        console.log('-----')
                         let post_path = movieInfo.results && movieInfo.results.length > 0 ? movieInfo.results[0].poster_path: null
 
                         return {
