@@ -44,11 +44,17 @@ const RootQueryType = new GraphQLObjectType({
                         // get data from tmdb
                         const getMovieData = await nodefetch(`https://api.themoviedb.org/3/search/movie?api_key=5c02836408fe7aadee40bfb9302b57eb&query=${movie.title}`)                        
                         let movieInfo = await getMovieData.json()
+                        
+                        console.log('-----')
+                        console.log(`>>> for ${movie.title} \n`)
+                        console.log('>>>', movieInfo.results[0], '<<<')
+                        console.log('-----')
+                        let post_path = movieInfo.results && movieInfo.results.length > 0 ? movieInfo.results[0].poster_path: null
 
                         return {
                             ...movie._doc, 
-                            "synopsis": movieInfo.results[0].overview, 
-                            "image": `https://www.themoviedb.org/t/p/w220_and_h330_face/${movieInfo.results[0].poster_path}`
+                            "synopsis": movieInfo.results && movieInfo.results.length > 0 ? movieInfo.results[0].overview: null,     
+                            "image": post_path
                         }
                     })
 
